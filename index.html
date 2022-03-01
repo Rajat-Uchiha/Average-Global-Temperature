@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Average Global Temperature</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+
+<body class="font-ubuntu" onload="myLoader()">
+
+    <div id="loader" class="bg-stone-900 text-white flex justify-center items-center h-screen w-full z-50 fixed">
+        <div class="flex justify-center text-white">
+            <h1 class="text-white text-4xl text-center">Loading Please Wait.....</h1>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-stone-800 text-white py-2 w-screen">
+        <ul class="flex justify-center items-center">
+            <li class="mx-2"><img class="h-12 w-32 invert" src="/images/logo.png" alt="ourLogo"></li>
+            <li class="mx-2"><a class="font-ubuntu font-bold" href="/">Home</a></li>
+        </ul>
+    </nav>
+
+    <!-- Heading container -->
+    <div class="bg-stone-600 shadow-lg ">
+        <hr>
+        <h1 class="text-center text-white font-extrabold text-3xl py-2 indent-6 "> GLOBAL Land-Ocean Temperature index
+        </h1>
+        <hr>
+    </div>
+
+    <!-- Graph Container -->
+    <div class="bg-stone-900 mx-auto py-2 px-2 h-screen">
+        <!-- THIS CONTAINER WILL CONTAIN THE GRAPH -->
+        <div class="w-5/6 mx-auto border-4 rounded-lg border-white py-4 my-4 px-4">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="w-5/6 mx-auto">
+            <h2 class="text-white font-extrabold underline underline-offset-8 my-3">Summary of the Graph</h2>
+            <p class="text-white ">This shows that the surface temperature of the Earth is increasing with the
+                passage of
+                time.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-white bg-stone-700 p-4">
+        <p class="text-white font-bold ">© 2021 Copyright: globetemp.com</p>
+    </div>
+</body>
+
+<script>
+    // Loader function
+    let loader = document.getElementById("loader");
+    function myLoader() {
+        loader.style.display = "none";
+    }
+
+    const xlabels = [];
+    const yTemps = [];
+    drawChart();
+
+    // Fucntion to create a chart
+    //Here we are using chart.js template
+    async function drawChart() {
+        await getData();
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xlabels,
+                datasets: [{
+                    label: " GLOBAL Land-Ocean Temperature Index in C°",
+                    data: yTemps,
+                    backgroundColor: ['#fff'],
+                    borderColor: ['#fff'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        ticks: {
+                            color: "#fff",
+                            // Include a dollar sign in the ticks
+                            callback: function (value, index, ticks) {
+                                return value + "°";
+                            }
+                        },
+                    },
+                    x: {
+                        ticks: {
+                            color: "#fff",
+                        }
+                    },
+                }
+            }
+        });
+    };
+    async function getData() {
+        let response = await fetch("mainData.csv");
+        let data = await response.text();// This will convert the csv file into text file
+        let rows = data.split("\n"); //This split fucntion will turn that text data into array. The split function denotes k hme kya element chahiye 
+        // jaise ki yha hme new line ek array main chahiye issliye \n use kiya
+        rows = rows.slice(1);// This will ignore the 0th index and will start the array from index 1
+
+        // Here we will use forEach loop 
+        //rows is an array will contains each row as an element
+        rows.forEach(ele => {
+            const value = ele.split(",");//This will give all the values splitted by comma.
+            const year = value[0]; //This will give me the year
+            xlabels.push(year); //Pushing/adding each element in the array xlabels
+            const temp = value[13]; //This will give me the average temperature of the year
+            let chngTemp = parseFloat(temp) / 100;//Chaning the temperature into real time temperature
+            yTemps.push(chngTemp * 1000); //Pushing/adding each element in the array yTemps
+        })
+
+    }
+</script>
+
+</html>
